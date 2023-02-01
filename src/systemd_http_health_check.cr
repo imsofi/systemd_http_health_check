@@ -39,13 +39,14 @@ def watchdog
     sd_notify "WATCHDOG_USEC=#{(INTERVAL + 5.seconds).total_microseconds.to_i}"
   end
 
-  while up?
-    sd_notify "WATCHDOG=1"
-    sleep INTERVAL
+  while true
+    if up?
+      sd_notify "WATCHDOG=1"
+      sleep INTERVAL
+    else
+      sleep 1
+    end
   end
-
-  warn "Assuming service is down, sending trigger."
-  sd_notify "WATCHDOG=trigger"
 end
 
 def parse_success_codes(codes)
