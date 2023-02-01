@@ -4,7 +4,7 @@ This is a little companion daemon that notifies systemd about the availability o
 
 ## Install
 
-1. Install [Crystal](https://crystal-lang.org/) and libsystemd.
+1. Install [Crystal](https://crystal-lang.org/), `openssl`, and `libsystemd`.
 2. Clone this repository
 3. Run `shards build --release`.
 4. Copy `bin/systemd_http_health_check` wherever you please.
