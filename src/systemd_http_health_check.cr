@@ -35,7 +35,9 @@ def notify_ready
 end
 
 def watchdog
-  sd_notify "WATCHDOG_USEC=#{(INTERVAL + 5.seconds).total_microseconds.to_i}"
+  if ! ENV.has_key?("WATCHDOG_USEC")
+    sd_notify "WATCHDOG_USEC=#{(INTERVAL + 5.seconds).total_microseconds.to_i}"
+  end
 
   while up?
     sd_notify "WATCHDOG=1"
@@ -64,7 +66,7 @@ usage unless ARGV.size == 1 || !ARGV[1].to_i?.nil?
 abort "NOTIFY_SOCKET is empty, running with Type=notify under systemd?" unless ENV.has_key?("NOTIFY_SOCKET")
 
 ENDPOINT = ARGV[0]
-INTERVAL = (ARGV[1]? || 60).to_i.seconds
+INTERVAL = ARGV[1]?.try(&.to_i.seconds) || ENV.fetch("WATCHDOG_USEC", nil).try { |x| (x.to_i // 2).microseconds } || 60.seconds
 SUCCESS_CODES = parse_success_codes ENV.fetch("HTTP_SUCCESS_CODES", "200-299")
 
 notify_ready
