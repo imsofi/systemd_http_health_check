@@ -26,6 +26,14 @@ rescue e
   false
 end
 
+def notify_setup
+  if ENV.has_key?("WATCHDOG_USEC") && ! ENV.has_key?("WATCHDOG_PID")
+    ENV["WATCHDOG_PID"] = "#{Process.pid}";
+  else
+    warn "WATCHDOG_PID is set to a different process (#{ENV["WATCHDOG_PID"]}), unless NotifyAccess is set to 'all' this may break!"
+  end
+end
+
 def notify_ready
   until up?
     sleep 1
@@ -70,5 +78,6 @@ ENDPOINT = ARGV[0]
 INTERVAL = ARGV[1]?.try(&.to_i.seconds) || ENV.fetch("WATCHDOG_USEC", nil).try { |x| (x.to_i // 2).microseconds } || 60.seconds
 SUCCESS_CODES = parse_success_codes ENV.fetch("HTTP_SUCCESS_CODES", "200-299")
 
+notify_setup
 notify_ready
 watchdog
