@@ -16,7 +16,7 @@ It takes two parameters, first the HTTP URL to watch and optionally second an in
 
 In case you want to change which response codes are considered a successful response, you can set the `HTTP_SUCCESS_CODES` environment variable to a comma separated list. Each item can either be a valid HTTP status code or an inclusive range separated by a dash (`-`). For example setting `HTTP_SUCCESS_CODES` to `200-203,301` would consider the codes 200, 201, 202, 203 and 301 as a successful response.
 
-Unfortunately systemd offers no good way to run a companion daemon with access to the notify socket alongside a service. To avoid the complexity of forking off a child process in the watchdog daemon the recommend setup is using a shell to start both processes:
+Unfortunately, systemd offers no good way to run a companion daemon with access to the notify socket alongside a service. To avoid the complexity of forking off a child process in the watchdog daemon the recommend setup would be to run a shell to start both processes. Note that the single ampersand in `ExecStart` is not a typo, but actually there to send the health check daemon into the background.
 
 ```service
 [Unit]
@@ -25,10 +25,9 @@ Unfortunately systemd offers no good way to run a companion daemon with access t
 [Service]
 # ...
 Type=notify
-NotifyAccess=all
-Restart=always
-# The single ampersand here is no typo but to send the health check daemon into the background
-ExecStart=/bin/sh -c '/usr/local/bin/systemd_http_health_check "http://localhost:3000/health-check & exec /usr/local/bin/your-http-service -p 3000"
+NotifyAccess=exec
+Restart=on-failure
+ExecStart=/bin/sh -c '/usr/local/bin/systemd_http_health_check "http://localhost:3000/health-check" & exec /usr/local/bin/your-http-service -p 3000'
 ```
 
 ## Contributing
